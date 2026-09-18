@@ -24,7 +24,7 @@ just to find the two or three it needs.
 | Startup metadata | **72.6% saved** |
 | Core skill bodies | **78.9% saved** |
 | Average task load | **96.0% saved** |
-| Warm-cache speedup | **2.8x** |
+| Warm-cache speedup | **2.7x** |
 
 <p><strong>Measured baseline:</strong> 100 full skill bodies ≈ 237,766 tokens →
 metadata index ≈ 5,164 tokens → average selected task ≈ 9,497 tokens.</p>

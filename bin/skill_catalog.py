@@ -9,6 +9,7 @@ import json
 import os
 import re
 import subprocess
+import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -150,27 +151,62 @@ def search(entries: list[dict[str, Any]], query: str, limit: int) -> list[dict[s
     return [entry | {"score": score} for score, entry in ranked[:limit]]
 
 
-def _opencode_select(entries: list[dict[str, Any]], query: str, limit: int) -> list[dict[str, Any]]:
+def _selection_instruction(entries: list[dict[str, Any]], query: str, limit: int) -> str:
     compact = [{"name": item["name"], "description": item["description"], "tags": item["tags"]} for item in entries]
-    instruction = (
+    return (
         "Select the most relevant skills for the task. Return JSON only as "
         '{"skills":["name"]}. Choose at most %d names and never invent names.\n\n'
         "TASK: %s\n\nCATALOG:\n%s"
     ) % (limit, query, json.dumps(compact, ensure_ascii=False))
-    try:
-        result = subprocess.run(["opencode", "run", instruction, "--format", "json"], text=True, capture_output=True, check=True, timeout=90)
-    except (OSError, subprocess.SubprocessError) as exc:
-        raise RuntimeError(f"OpenCode selector failed: {exc}") from exc
+
+
+def _parse_selection(text: str, entries: list[dict[str, Any]], limit: int, backend: str) -> list[dict[str, Any]]:
     by_name = {item["name"].lower(): item for item in entries}
-    for candidate in re.findall(r"\{.*?\}", result.stdout, re.DOTALL):
+    candidates = re.findall(r"\{.*?\}", text, re.DOTALL)
+    candidates.insert(0, text)
+    for candidate in candidates:
         try:
-            payload = json.loads(candidate)
+            payload = json.loads(candidate.strip().removeprefix("```json").removesuffix("```").strip())
         except json.JSONDecodeError:
             continue
         names = payload.get("skills")
         if isinstance(names, list):
-            return [by_name[name.lower()] | {"score": 0, "backend": "opencode"} for name in names if str(name).lower() in by_name][:limit]
+            return [by_name[str(name).lower()] | {"score": 0, "backend": backend} for name in names if str(name).lower() in by_name][:limit]
     return []
+
+
+def _http_json(endpoint: str, payload: dict[str, Any]) -> dict[str, Any]:
+    request = urllib.request.Request(endpoint, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+    with urllib.request.urlopen(request, timeout=90) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def _remote_select(entries: list[dict[str, Any]], query: str, limit: int, backend: str, endpoint: str | None, model: str | None) -> list[dict[str, Any]]:
+    instruction = _selection_instruction(entries, query, limit)
+    if backend == "opencode":
+        try:
+            result = subprocess.run(["opencode", "run", instruction, "--format", "json"], text=True, capture_output=True, check=True, timeout=90)
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise RuntimeError(f"OpenCode selector failed: {exc}") from exc
+        return _parse_selection(result.stdout, entries, limit, backend)
+    if backend == "ollama":
+        payload = {"model": model or os.environ.get("SKILL_CATALOG_OLLAMA_MODEL", "qwen2.5:3b"), "messages": [{"role": "user", "content": instruction}], "stream": False, "format": "json", "options": {"temperature": 0}}
+        url = endpoint or os.environ.get("SKILL_CATALOG_OLLAMA_URL", "http://127.0.0.1:11434/api/chat")
+        try:
+            response = _http_json(url, payload)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            raise RuntimeError(f"Ollama selector failed: {exc}") from exc
+        return _parse_selection(response.get("message", {}).get("content", ""), entries, limit, backend)
+    if backend == "llamacpp":
+        payload = {"model": model or os.environ.get("SKILL_CATALOG_LLAMACPP_MODEL", "local-model"), "messages": [{"role": "user", "content": instruction}], "temperature": 0, "max_tokens": 256, "response_format": {"type": "json_object"}}
+        url = endpoint or os.environ.get("SKILL_CATALOG_LLAMACPP_URL", "http://127.0.0.1:8080/v1/chat/completions")
+        try:
+            response = _http_json(url, payload)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            raise RuntimeError(f"llama.cpp selector failed: {exc}") from exc
+        content = response.get("choices", [{}])[0].get("message", {}).get("content", "")
+        return _parse_selection(content, entries, limit, backend)
+    raise ValueError(f"Unsupported selector backend: {backend}")
 
 
 def render_prompt(selected: list[dict[str, Any]], query: str) -> str:
@@ -187,7 +223,9 @@ def main() -> int:
     parser.add_argument("--repo", default=".")
     parser.add_argument("--roots", help="Colon-separated skill roots")
     parser.add_argument("--limit", type=int, default=3)
-    parser.add_argument("--backend", choices=("local", "opencode"), default="local")
+    parser.add_argument("--backend", choices=("local", "opencode", "ollama", "llamacpp"), default="local")
+    parser.add_argument("--endpoint", help="Provider endpoint for ollama or llamacpp")
+    parser.add_argument("--model", help="Provider model name")
     parser.add_argument("--output", default=".skill-catalog/index.json")
     parser.add_argument("--cache-dir")
     parser.add_argument("--no-cache", action="store_true")
@@ -200,7 +238,7 @@ def main() -> int:
         output.write_text(json.dumps({"version": 1, "skills": entries}, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"Indexed {len(entries)} skills into {args.output}")
         return 0
-    selected = _opencode_select(entries, args.query, args.limit) if args.backend == "opencode" else search(entries, args.query, args.limit)
+    selected = search(entries, args.query, args.limit) if args.backend == "local" else _remote_select(entries, args.query, args.limit, args.backend, args.endpoint, args.model)
     print(json.dumps(selected, indent=2, ensure_ascii=False) if args.command == "search" else render_prompt(selected, args.query))
     return 0
 

@@ -68,9 +68,23 @@ skill-catalog prompt "review this web app" --cache-dir "$HOME/.cache/my-sorter"
 skill-catalog prompt "review this web app" --no-cache
 ```
 
-Ollama and llama.cpp are natural local replacements for the OpenCode selector,
-but they are not built-in backends yet. An adapter should receive the same
-compact request and return the same JSON response, for example:
+Ollama and llama.cpp are built-in local providers. They receive the same
+compact request and return the same JSON response. Their endpoints and models
+are configurable:
+
+```bash
+skill-catalog prompt "review this web app" --backend ollama --model qwen2.5:3b
+skill-catalog prompt "review this web app" --backend llamacpp \
+  --endpoint http://127.0.0.1:8080/v1/chat/completions --model local-model
+```
+
+Environment defaults are `SKILL_CATALOG_OLLAMA_URL`,
+`SKILL_CATALOG_OLLAMA_MODEL`, `SKILL_CATALOG_LLAMACPP_URL`, and
+`SKILL_CATALOG_LLAMACPP_MODEL`. The default endpoints are Ollama's local
+`/api/chat` service on port 11434 and llama.cpp's OpenAI-compatible server on
+port 8080.
+
+Every provider uses the same compact request and response contract:
 
 ```json
 {
@@ -82,11 +96,10 @@ compact request and return the same JSON response, for example:
 }
 ```
 
-An Ollama adapter would POST the request to its local `/api/chat` endpoint; a
-llama.cpp adapter would POST an equivalent prompt to its local
-`/v1/chat/completions` endpoint. Neither adapter should receive or return full
-`SKILL.md` contents. This keeps model traffic local while preserving the same
-selector contract.
+The Ollama provider POSTs to `/api/chat`; the llama.cpp provider POSTs to
+`/v1/chat/completions`. Neither provider receives or returns full `SKILL.md`
+contents. This keeps model traffic local while preserving the same selector
+contract.
 
 Catalogs are cached per project under `~/.cache/skill-catalog/`. The project
 path is hashed into the cache directory. The cache stores metadata and a

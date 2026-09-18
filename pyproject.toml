@@ -1,5 +1,5 @@
 [project]
-name = "skill-catalog"
+name = "skill-catalog-sorter"
 version = "0.1.0"
 description = "Progressive-disclosure routing for agent skills"
 requires-python = ">=3.10"

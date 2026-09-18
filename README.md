@@ -1,4 +1,4 @@
-# Skill Catalog
+# Skill Catalog Sorter
 
 A provider-neutral, progressive-disclosure router for Agent Skills.
 

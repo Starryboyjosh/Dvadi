@@ -1,0 +1,16 @@
+[project]
+name = "skill-catalog"
+version = "0.1.0"
+description = "Progressive-disclosure routing for agent skills"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+[project.scripts]
+skill-catalog = "skill_catalog:main"
+
+[tool.setuptools]
+package-dir = {"" = "bin"}
+py-modules = ["skill_catalog"]
+
+[tool.pytest.ini_options]
+pythonpath = ["bin"]

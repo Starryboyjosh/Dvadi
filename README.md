@@ -6,6 +6,8 @@ It keeps only a compact name/description index in the agent's visible context,
 selects the most relevant skills for a task, and lets Codex, Claude, Hermes, or
 OpenCode load the full `SKILL.md` files only after selection.
 
+![Startup savings](https://img.shields.io/badge/startup_savings-72.6%25-00d084?style=for-the-badge) ![Core body savings](https://img.shields.io/badge/core_body_savings-78.9%25-00b8ff?style=for-the-badge) ![Average task savings](https://img.shields.io/badge/average_task_savings-96.0%25-ffb000?style=for-the-badge)
+
 ## Install
 
 ```bash
@@ -130,6 +132,10 @@ actual token counts vary by model tokenizer.
 ### Current results
 
 Measured against the current 100-skill installation:
+
+<p align="center">
+  <img src="assets/benchmark-bars.svg" alt="Colorful benchmark bars showing 72.6 percent startup metadata savings, 78.9 percent core skill body savings, and 96 percent average task-load savings" width="900">
+</p>
 
 ```text
 Startup metadata  [#######################.........]  72.6% saved

@@ -1,38 +1,30 @@
 # Promotion Checklist
 
-The repository is ready for its first public release. GitHub account-level
-actions still need to be completed once while signed in.
+The repository is live as `Starryboyjosh/skill-catalog-sorter` with its first
+public release. The repository metadata and release actions are complete.
 
 ## Repository metadata
 
-Rename the repository to `skill-catalog-sorter`, set this description:
+The repository description is:
 
 > Local context router for AI coding agents. Select skills from compact metadata before loading full instructions.
 
-Add these topics:
+The repository topics are:
 
 ```text
 agent-skills, ai-agents, llm, token-optimization, context-window,
 ollama, llama-cpp, opencode, claude-code, openai-codex, developer-tools
 ```
 
-Pin the repository on the GitHub profile. GitHub permits up to six pinned
-repositories.
+The remaining account-level step is to pin the repository on the GitHub
+profile. GitHub permits up to six pinned repositories.
 
-## Release
+## Already completed
 
-```bash
-gh auth login
-gh repo rename skill-catalog-sorter --repo Starryboyjosh/Dvadi --yes
-git remote set-url origin git@github.com:Starryboyjosh/skill-catalog-sorter.git
-gh repo edit Starryboyjosh/skill-catalog-sorter \
-  --description "Local context router for AI coding agents" \
-  --add-topic agent-skills --add-topic ai-agents --add-topic llm \
-  --add-topic token-optimization --add-topic context-window \
-  --add-topic ollama --add-topic llama-cpp --add-topic opencode \
-  --add-topic claude-code --add-topic openai-codex --add-topic developer-tools
-gh release create v0.1.0 --repo Starryboyjosh/skill-catalog-sorter \
-  --title "Skill Catalog Sorter v0.1.0" --generate-notes
+```text
+Repository: Starryboyjosh/skill-catalog-sorter
+Release:    v0.1.0
+Remote:     git@github.com:Starryboyjosh/skill-catalog-sorter.git
 ```
 
 ## Launch copy

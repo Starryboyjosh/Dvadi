@@ -42,6 +42,15 @@ def unique(entries: list[dict]) -> list[dict]:
     return result
 
 
+def percent(saved: int, total: int) -> float:
+    return 0.0 if total <= 0 else max(0.0, min(100.0, saved * 100 / total))
+
+
+def bar(value: float, width: int = 32) -> str:
+    filled = round(width * value / 100)
+    return "[" + "#" * filled + "." * (width - filled) + "]"
+
+
 def main() -> int:
     full_roots = [
         ROOT / "skill-catalog",
@@ -73,17 +82,28 @@ def main() -> int:
     print(f"Core profile:     {len(core):>3} skills, {core_chars:>8,} chars, ~{tokens(core_chars):,} tokens")
     print(f"Metadata index:   {len(metadata):>3} skills, {metadata_chars:>8,} chars, ~{tokens(metadata_chars):,} tokens")
     print(f"Core metadata:    {len(core_metadata):>3} skills, {core_metadata_chars:>8,} chars, ~{tokens(core_metadata_chars):,} tokens")
-    print(f"Startup reduction:{max(0, 100 - (core_metadata_chars * 100 // metadata_chars)):>4}% by metadata size")
-    print(f"Core reduction:   {max(0, 100 - (core_chars * 100 // full_chars))}% by skill body size")
+    startup_reduction = percent(metadata_chars - core_metadata_chars, metadata_chars)
+    core_reduction = percent(full_chars - core_chars, full_chars)
+    print()
+    print("CONTEXT SAVINGS")
+    print(f"Startup metadata  {bar(startup_reduction)} {startup_reduction:5.1f}% saved")
+    print(f"Core skill bodies {bar(core_reduction)} {core_reduction:5.1f}% saved")
     print()
 
+    selected_total = 0
     for query in QUERIES:
         selected = search(full, query, 3)
         selected_chars = sum(chars(item["path"]) for item in selected)
+        selected_total += selected_chars
         names = ", ".join(item["name"] for item in selected) or "none"
         print(f"{query}")
         print(f"  selected: {names}")
         print(f"  loaded:   {selected_chars:,} chars, ~{tokens(selected_chars):,} tokens")
+    average_selected = selected_total // len(QUERIES) if QUERIES else 0
+    print()
+    print("TASK LOAD")
+    print(f"Average selected load: {average_selected:,} chars, ~{tokens(average_selected):,} tokens")
+    print(f"Versus full catalog:   {bar(percent(full_chars - average_selected, full_chars))} {percent(full_chars - average_selected, full_chars):5.1f}% saved")
     return 0
 
 

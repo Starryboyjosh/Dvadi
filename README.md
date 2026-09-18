@@ -80,9 +80,10 @@ skill-catalog prompt "review this web app" --backend llamacpp \
 
 Environment defaults are `SKILL_CATALOG_OLLAMA_URL`,
 `SKILL_CATALOG_OLLAMA_MODEL`, `SKILL_CATALOG_LLAMACPP_URL`, and
-`SKILL_CATALOG_LLAMACPP_MODEL`. The default endpoints are Ollama's local
-`/api/chat` service on port 11434 and llama.cpp's OpenAI-compatible server on
-port 8080.
+`SKILL_CATALOG_LLAMACPP_MODEL`. Ollama defaults to its local `/api/chat`
+service on port 11434. For llama.cpp, the sorter honors an explicit endpoint,
+then probes ports from `SKILL_CATALOG_LLAMACPP_PORTS` (default: `8080,1234,8000`)
+through `/v1/models` before selecting the first live server.
 
 Every provider uses the same compact request and response contract:
 
@@ -111,6 +112,20 @@ discovered `SKILL.md` file changes.
 `bin/skill_profile.py` creates a reversible core-skill profile for Codex or
 Claude. It stores the previous directory as a timestamped backup and uses
 symlinks so one source collection can serve both agents.
+
+## Benchmark
+
+Measure the context savings locally:
+
+```bash
+PYTHONPATH=bin python3 bin/benchmark_skill_context.py
+```
+
+The report compares the full skill bodies, the reduced core profile, the
+metadata-only index, and the skills selected for representative tasks. It
+prints estimated tokens using four characters per token, plus ASCII bars for
+startup, core-profile, and task-load savings. These are planning estimates;
+actual token counts vary by model tokenizer.
 
 ## License
 

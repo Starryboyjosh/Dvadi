@@ -10,6 +10,7 @@ import os
 import re
 import subprocess
 import urllib.request
+from urllib.error import URLError
 from pathlib import Path
 from typing import Any
 
@@ -181,6 +182,29 @@ def _http_json(endpoint: str, payload: dict[str, Any]) -> dict[str, Any]:
         return json.loads(response.read().decode("utf-8"))
 
 
+def _llamacpp_endpoint(explicit: str | None) -> str:
+    if explicit:
+        return explicit
+    configured = os.environ.get("SKILL_CATALOG_LLAMACPP_URL")
+    if configured:
+        return configured
+    ports = os.environ.get("SKILL_CATALOG_LLAMACPP_PORTS", "8080,1234,8000").split(",")
+    for raw_port in ports:
+        port = raw_port.strip()
+        if not port.isdigit():
+            continue
+        base = f"http://127.0.0.1:{port}"
+        try:
+            with urllib.request.urlopen(f"{base}/v1/models", timeout=1.0):
+                return f"{base}/v1/chat/completions"
+        except (OSError, URLError):
+            continue
+    raise RuntimeError(
+        "llama.cpp server not found on localhost. Start it or set "
+        "SKILL_CATALOG_LLAMACPP_URL / --endpoint. Probed ports: " + ", ".join(p.strip() for p in ports if p.strip())
+    )
+
+
 def _remote_select(entries: list[dict[str, Any]], query: str, limit: int, backend: str, endpoint: str | None, model: str | None) -> list[dict[str, Any]]:
     instruction = _selection_instruction(entries, query, limit)
     if backend == "opencode":
@@ -199,7 +223,7 @@ def _remote_select(entries: list[dict[str, Any]], query: str, limit: int, backen
         return _parse_selection(response.get("message", {}).get("content", ""), entries, limit, backend)
     if backend == "llamacpp":
         payload = {"model": model or os.environ.get("SKILL_CATALOG_LLAMACPP_MODEL", "local-model"), "messages": [{"role": "user", "content": instruction}], "temperature": 0, "max_tokens": 256, "response_format": {"type": "json_object"}}
-        url = endpoint or os.environ.get("SKILL_CATALOG_LLAMACPP_URL", "http://127.0.0.1:8080/v1/chat/completions")
+        url = _llamacpp_endpoint(endpoint)
         try:
             response = _http_json(url, payload)
         except (OSError, ValueError, json.JSONDecodeError) as exc:
@@ -238,7 +262,10 @@ def main() -> int:
         output.write_text(json.dumps({"version": 1, "skills": entries}, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"Indexed {len(entries)} skills into {args.output}")
         return 0
-    selected = search(entries, args.query, args.limit) if args.backend == "local" else _remote_select(entries, args.query, args.limit, args.backend, args.endpoint, args.model)
+    try:
+        selected = search(entries, args.query, args.limit) if args.backend == "local" else _remote_select(entries, args.query, args.limit, args.backend, args.endpoint, args.model)
+    except RuntimeError as exc:
+        parser.error(str(exc))
     print(json.dumps(selected, indent=2, ensure_ascii=False) if args.command == "search" else render_prompt(selected, args.query))
     return 0
 

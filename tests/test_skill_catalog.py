@@ -1,7 +1,7 @@
 import tempfile
 import unittest
 from unittest.mock import patch
-from skill_catalog import _parse_selection, _remote_select, catalog_for, search
+from skill_catalog import _llamacpp_endpoint, _parse_selection, _remote_select, catalog_for, search
 from pathlib import Path
 
 
@@ -55,8 +55,11 @@ class SkillCatalogTests(unittest.TestCase):
                 self.assertEqual(_remote_select(entries, "make a PDF", 2, "ollama", None, "qwen2.5:3b")[0]["name"], "pdf")
                 self.assertEqual(request.call_args.args[0], "http://127.0.0.1:11434/api/chat")
             with patch("skill_catalog._http_json", return_value={"choices": [{"message": {"content": '{"skills":["pdf"]}'}}]}) as request:
-                self.assertEqual(_remote_select(entries, "make a PDF", 2, "llamacpp", None, "local-model")[0]["name"], "pdf")
+                self.assertEqual(_remote_select(entries, "make a PDF", 2, "llamacpp", "http://127.0.0.1:8080/v1/chat/completions", "local-model")[0]["name"], "pdf")
                 self.assertEqual(request.call_args.args[0], "http://127.0.0.1:8080/v1/chat/completions")
+
+    def test_llamacpp_endpoint_honors_configuration(self):
+        self.assertEqual(_llamacpp_endpoint("http://localhost:9999/v1/chat/completions"), "http://localhost:9999/v1/chat/completions")
 
 
 if __name__ == "__main__":

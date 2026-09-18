@@ -124,10 +124,11 @@ PYTHONPATH=bin python3 bin/benchmark_skill_context.py
 ```
 
 The report compares the full skill bodies, the reduced core profile, the
-metadata-only index, and the skills selected for representative tasks. It
-prints estimated tokens using four characters per token, plus ASCII bars for
-startup, core-profile, and task-load savings. These are planning estimates;
-actual token counts vary by model tokenizer.
+metadata-only index, and the skills selected for representative tasks. It also
+measures selector payload size, cold index-build time, warm-cache time, and
+cache speedup. It prints estimated tokens using four characters per token,
+plus ASCII bars for startup, core-profile, and task-load savings. These are
+planning estimates; actual token counts vary by model tokenizer.
 
 ### Current results
 
@@ -144,6 +145,13 @@ Average task load: ~9,497 tokens
 Versus full catalog [###############################.]  96.0% saved
 ```
 
+```text
+Selector payload: ~5,177 tokens
+Cold index build:   8.64 ms
+Warm cache read:    3.04 ms
+Cache speedup:       2.8x
+```
+
 Baseline comparison:
 
 | Mode | Skills | Estimated tokens |
@@ -154,8 +162,16 @@ Baseline comparison:
 | Core metadata index | 20 | 1,417 |
 | Average selected task load | 3 | 9,497 |
 
-These figures are estimates using four characters per token. Run the benchmark
-again after changing the installed skills to refresh the numbers.
+| Router metric | Result |
+| --- | ---: |
+| Selector metadata payload | ~5,177 tokens |
+| Cold index build | 8.64 ms |
+| Warm cache read | 3.04 ms |
+| Cache speedup | 2.8x |
+
+These figures come from one local benchmark run and token estimates use four
+characters per token. Run the benchmark again after changing the installed
+skills or machine to refresh the numbers.
 
 ## License
 

@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import json
+import tempfile
+import time
 from pathlib import Path
 
-from skill_catalog import build_catalog, search
+from skill_catalog import build_catalog, catalog_for, search
 from skill_profile import CORE_SKILLS
 
 
@@ -75,6 +77,15 @@ def main() -> int:
     core_chars = sum(chars(item["path"]) for item in core)
     metadata_chars = len(json.dumps(metadata, ensure_ascii=False))
     core_metadata_chars = len(json.dumps(core_metadata, ensure_ascii=False))
+    selector_payload_chars = len(json.dumps({"task": QUERIES[0], "catalog": metadata}, ensure_ascii=False))
+
+    with tempfile.TemporaryDirectory(prefix="skill-catalog-benchmark-") as cache:
+        started = time.perf_counter()
+        catalog_for(ROOT, full_roots, cache, True)
+        cold_ms = (time.perf_counter() - started) * 1000
+        started = time.perf_counter()
+        catalog_for(ROOT, full_roots, cache, True)
+        warm_ms = (time.perf_counter() - started) * 1000
 
     print("Skill context benchmark")
     print("=======================")
@@ -88,6 +99,12 @@ def main() -> int:
     print("CONTEXT SAVINGS")
     print(f"Startup metadata  {bar(startup_reduction)} {startup_reduction:5.1f}% saved")
     print(f"Core skill bodies {bar(core_reduction)} {core_reduction:5.1f}% saved")
+    print()
+    print("ROUTER AND CACHE")
+    print(f"Selector payload:  {selector_payload_chars:>8,} chars, ~{tokens(selector_payload_chars):,} tokens")
+    print(f"Cold index build:  {cold_ms:>8.2f} ms")
+    print(f"Warm cache read:   {warm_ms:>8.2f} ms")
+    print(f"Cache speedup:     {cold_ms / warm_ms:>8.1f}x" if warm_ms else "Cache speedup:          n/a")
     print()
 
     selected_total = 0

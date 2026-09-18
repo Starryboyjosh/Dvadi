@@ -127,6 +127,30 @@ prints estimated tokens using four characters per token, plus ASCII bars for
 startup, core-profile, and task-load savings. These are planning estimates;
 actual token counts vary by model tokenizer.
 
+### Current results
+
+Measured against the current 100-skill installation:
+
+```text
+Startup metadata  [#######################.........]  72.6% saved
+Core skill bodies [#########################.......]  78.9% saved
+Average task load: ~9,497 tokens
+Versus full catalog [###############################.]  96.0% saved
+```
+
+Baseline comparison:
+
+| Mode | Skills | Estimated tokens |
+| --- | ---: | ---: |
+| Full skill bodies | 100 | 237,766 |
+| Core profile bodies | 20 | 50,104 |
+| Full metadata index | 100 | 5,164 |
+| Core metadata index | 20 | 1,417 |
+| Average selected task load | 3 | 9,497 |
+
+These figures are estimates using four characters per token. Run the benchmark
+again after changing the installed skills to refresh the numbers.
+
 ## License
 
 MIT

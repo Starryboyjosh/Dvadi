@@ -1,8 +1,8 @@
 # Changelog
 
-## v0.1.0 - 2026-09-17
+## v1.0.0 - 2026-09-17
 
-Initial public release of Skill Catalog Sorter.
+First stable public release of Skill Catalog Sorter.
 
 - Progressive-disclosure skill routing with a deterministic local backend.
 - OpenCode, Ollama, and llama.cpp provider support.

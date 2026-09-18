@@ -8,6 +8,44 @@ OpenCode load the full `SKILL.md` files only after selection.
 
 ![Startup savings](https://img.shields.io/badge/startup_savings-72.6%25-00d084?style=for-the-badge) ![Core body savings](https://img.shields.io/badge/core_body_savings-78.9%25-00b8ff?style=for-the-badge) ![Average task savings](https://img.shields.io/badge/average_task_savings-96.0%25-ffb000?style=for-the-badge)
 
+<div align="center">
+
+## Current Results
+
+The sorter keeps the agent's first decision small. It scans a compact metadata
+index, selects only relevant skills, and lets the agent load full instructions
+after selection. That means the model does not repeatedly ingest every skill
+just to find the two or three it needs.
+
+<img src="assets/benchmark-bars.svg" alt="Colorful benchmark bars showing 72.6 percent startup metadata savings, 78.9 percent core skill body savings, and 96 percent average task-load savings" width="900">
+
+| Context reduction | Result |
+| --- | ---: |
+| Startup metadata | **72.6% saved** |
+| Core skill bodies | **78.9% saved** |
+| Average task load | **96.0% saved** |
+| Warm-cache speedup | **2.8x** |
+
+<p><strong>Measured baseline:</strong> 100 full skill bodies ≈ 237,766 tokens →
+metadata index ≈ 5,164 tokens → average selected task ≈ 9,497 tokens.</p>
+
+</div>
+
+### Run Your Own Benchmark
+
+> **Make the numbers yours:** run this from the repository root after
+> installing or changing skills.
+
+It measures the actual catalog on your machine, including context sizes,
+selector payload, cold build time, warm-cache time, and cache speedup:
+
+```bash
+PYTHONPATH=bin python3 bin/benchmark_skill_context.py
+```
+
+The token figures are planning estimates using four characters per token; the
+timings are measured locally and will vary by machine and filesystem.
+
 ## Install
 
 ```bash
@@ -114,64 +152,6 @@ discovered `SKILL.md` file changes.
 `bin/skill_profile.py` creates a reversible core-skill profile for Codex or
 Claude. It stores the previous directory as a timestamped backup and uses
 symlinks so one source collection can serve both agents.
-
-## Benchmark
-
-Measure the context savings locally:
-
-```bash
-PYTHONPATH=bin python3 bin/benchmark_skill_context.py
-```
-
-The report compares the full skill bodies, the reduced core profile, the
-metadata-only index, and the skills selected for representative tasks. It also
-measures selector payload size, cold index-build time, warm-cache time, and
-cache speedup. It prints estimated tokens using four characters per token,
-plus ASCII bars for startup, core-profile, and task-load savings. These are
-planning estimates; actual token counts vary by model tokenizer.
-
-### Current results
-
-Measured against the current 100-skill installation:
-
-<p align="center">
-  <img src="assets/benchmark-bars.svg" alt="Colorful benchmark bars showing 72.6 percent startup metadata savings, 78.9 percent core skill body savings, and 96 percent average task-load savings" width="900">
-</p>
-
-```text
-Startup metadata  [#######################.........]  72.6% saved
-Core skill bodies [#########################.......]  78.9% saved
-Average task load: ~9,497 tokens
-Versus full catalog [###############################.]  96.0% saved
-```
-
-```text
-Selector payload: ~5,177 tokens
-Cold index build:   8.64 ms
-Warm cache read:    3.04 ms
-Cache speedup:       2.8x
-```
-
-Baseline comparison:
-
-| Mode | Skills | Estimated tokens |
-| --- | ---: | ---: |
-| Full skill bodies | 100 | 237,766 |
-| Core profile bodies | 20 | 50,104 |
-| Full metadata index | 100 | 5,164 |
-| Core metadata index | 20 | 1,417 |
-| Average selected task load | 3 | 9,497 |
-
-| Router metric | Result |
-| --- | ---: |
-| Selector metadata payload | ~5,177 tokens |
-| Cold index build | 8.64 ms |
-| Warm cache read | 3.04 ms |
-| Cache speedup | 2.8x |
-
-These figures come from one local benchmark run and token estimates use four
-characters per token. Run the benchmark again after changing the installed
-skills or machine to refresh the numbers.
 
 ## License
 

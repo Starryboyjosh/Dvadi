@@ -18,6 +18,8 @@ skill-catalog prompt "<the user's task>"
 ```
 
 Read only the selected `SKILL.md` files, then load referenced files only when
-the selected skill requires them. For ambiguous tasks, add
-`--backend opencode`. The local selector is the default because it is free,
-private, and fast; OpenCode is an optional fallback.
+the selected skill requires them. The local selector is the default because it
+is free, private, and fast. For ambiguous tasks, add `--backend opencode`;
+OpenCode receives compact metadata and must return a JSON list of skill names.
+Ollama and llama.cpp adapters should preserve that same metadata-in,
+skill-names-out contract.

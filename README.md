@@ -24,11 +24,74 @@ Claude global instruction files.
 ~/.local/share/skill-catalog/bin/skill-catalog prompt "review this React dashboard" --backend opencode
 ```
 
-The local selector makes no model call. OpenCode receives metadata only and
-returns skill names; the calling agent reads the selected `SKILL.md` files.
+## Communication model
 
-Catalogs are cached per project under `~/.cache/skill-catalog/`. The cache is
-invalidated when roots or any discovered `SKILL.md` file changes.
+The sorter uses progressive disclosure:
+
+```text
+agent task
+    -> skill-catalog
+    -> skill metadata: name, description, tags, path
+    -> local ranker OR OpenCode selector
+    -> validated skill names and absolute SKILL.md paths
+    -> agent reads only those SKILL.md files
+```
+
+The default `local` backend makes no model call. It tokenizes the task and
+scores skill names, descriptions, tags, and source paths locally.
+
+With `--backend opencode`, the sorter runs:
+
+```text
+opencode run "<task + compact JSON catalog>" --format json
+```
+
+OpenCode receives the task plus compact metadata only, never the full skill
+documents. It must return JSON in this shape:
+
+```json
+{"skills": ["frontend-quality-review", "web-security-hardening"]}
+```
+
+The sorter rejects unknown names and turns the accepted names into paths. The
+agent then loads the selected `SKILL.md` files itself.
+
+## Local model configuration
+
+No model is required for the normal local backend. Configure its inputs with
+CLI options or environment variables:
+
+```bash
+export SKILL_CATALOG_ROOTS="$HOME/.agents/skills:$HOME/.codex/skills"
+skill-catalog prompt "review this web app" --backend local --limit 3
+skill-catalog prompt "review this web app" --cache-dir "$HOME/.cache/my-sorter"
+skill-catalog prompt "review this web app" --no-cache
+```
+
+Ollama and llama.cpp are natural local replacements for the OpenCode selector,
+but they are not built-in backends yet. An adapter should receive the same
+compact request and return the same JSON response, for example:
+
+```json
+{
+  "task": "review this web app",
+  "catalog": [
+    {"name": "frontend-quality-review", "description": "...", "tags": []}
+  ],
+  "output": {"skills": ["name"]}
+}
+```
+
+An Ollama adapter would POST the request to its local `/api/chat` endpoint; a
+llama.cpp adapter would POST an equivalent prompt to its local
+`/v1/chat/completions` endpoint. Neither adapter should receive or return full
+`SKILL.md` contents. This keeps model traffic local while preserving the same
+selector contract.
+
+Catalogs are cached per project under `~/.cache/skill-catalog/`. The project
+path is hashed into the cache directory. The cache stores metadata and a
+manifest, not full skill instructions, and is invalidated when roots or any
+discovered `SKILL.md` file changes.
 
 ## Profile manager
 

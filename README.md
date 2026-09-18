@@ -31,6 +31,23 @@ metadata index ≈ 5,164 tokens → average selected task ≈ 9,497 tokens.</p>
 
 </div>
 
+### Legend & Methodology
+
+| Term | Meaning |
+| --- | --- |
+| Full skill bodies | All **100 skills** discovered across the configured skill roots, with their complete `SKILL.md` instructions. |
+| Core skill bodies | The **20 skills** in the reduced Codex/Claude core profile, measured with their complete instructions. These are the skills kept globally visible by default. |
+| Metadata index | Names, descriptions, and tags for all 100 skills; full instructions are not included. |
+| Average task load | The average full-body size of the top 3 skills selected for 4 representative queries. |
+| Model used | **None.** The benchmark uses the deterministic local selector; OpenCode, Ollama, and llama.cpp are not called. |
+| Token estimate | `(characters + 3) // 4`, a planning approximation rather than an exact model tokenizer count. |
+| Cache test | A temporary per-project cache is measured once cold and once warm, then reported as a speedup. |
+
+The benchmark runs with `PYTHONPATH=bin`, reads the current local/global skill
+roots, and uses the same catalog that the sorter would route. Provider models
+are only used when you explicitly run a task with `--backend opencode`,
+`--backend ollama`, or `--backend llamacpp`; they are not part of these results.
+
 ### Run Your Own Benchmark
 
 > **Make the numbers yours:** run this from the repository root after

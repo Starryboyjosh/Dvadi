@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="235" viewBox="0 0 900 235" role="img" aria-labelledby="title desc">
+  <title id="title">Skill Catalog Sorter flow</title>
+  <desc id="desc">A task is reduced to metadata, routed locally or through an optional provider, and only selected skill instructions are loaded.</desc>
+  <rect width="900" height="235" rx="18" fill="#101827"/>
+  <text x="450" y="35" fill="#f8fafc" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700">Progressive disclosure</text>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="35" y="82" width="165" height="92" rx="12" fill="#243b5a" stroke="#00b8ff" stroke-width="2"/>
+    <text x="117" y="119" fill="#f8fafc" font-size="17" font-weight="700">Task</text>
+    <text x="117" y="146" fill="#cbd5e1" font-size="13">review this app</text>
+    <path d="M210 128h55" stroke="#64748b" stroke-width="3"/>
+    <path d="m257 119 12 9-12 9" fill="none" stroke="#64748b" stroke-width="3"/>
+    <rect x="275" y="82" width="165" height="92" rx="12" fill="#193b39" stroke="#00d084" stroke-width="2"/>
+    <text x="357" y="119" fill="#f8fafc" font-size="17" font-weight="700">Metadata</text>
+    <text x="357" y="146" fill="#cbd5e1" font-size="13">100 compact entries</text>
+    <path d="M450 128h55" stroke="#64748b" stroke-width="3"/>
+    <path d="m497 119 12 9-12 9" fill="none" stroke="#64748b" stroke-width="3"/>
+    <rect x="515" y="82" width="165" height="92" rx="12" fill="#443515" stroke="#ffb000" stroke-width="2"/>
+    <text x="597" y="119" fill="#f8fafc" font-size="17" font-weight="700">Sort</text>
+    <text x="597" y="146" fill="#cbd5e1" font-size="13">local / Ollama / OpenCode</text>
+    <path d="M690 128h55" stroke="#64748b" stroke-width="3"/>
+    <path d="m737 119 12 9-12 9" fill="none" stroke="#64748b" stroke-width="3"/>
+    <rect x="755" y="82" width="110" height="92" rx="12" fill="#3d244f" stroke="#c084fc" stroke-width="2"/>
+    <text x="810" y="119" fill="#f8fafc" font-size="17" font-weight="700">Load</text>
+    <text x="810" y="146" fill="#cbd5e1" font-size="13">top 3</text>
+  </g>
+</svg>

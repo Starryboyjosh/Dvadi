@@ -1,6 +1,11 @@
 # Skill Catalog Sorter
 
-A provider-neutral, progressive-disclosure router for Agent Skills.
+A local context router for AI coding agents.
+
+Skill Catalog Sorter is a provider-neutral, progressive-disclosure router for
+Agent Skills. It prevents agents from loading every skill on every task by
+selecting from compact metadata first, then loading only the relevant
+`SKILL.md` files.
 
 It keeps only a compact name/description index in the agent's visible context,
 selects the most relevant skills for a task, and lets Codex, Claude, Hermes, or
@@ -30,6 +35,10 @@ just to find the two or three it needs.
 metadata index ≈ 5,164 tokens → average selected task ≈ 9,497 tokens.</p>
 
 </div>
+
+<p align="center">
+  <img src="assets/selector-flow.svg" alt="Task flows through a compact skill index to a local or provider-backed selector and then to selected skill instructions" width="900">
+</p>
 
 ### Legend & Methodology
 
@@ -66,7 +75,7 @@ timings are measured locally and will vary by machine and filesystem.
 ## Install
 
 ```bash
-git clone <this-repository> ~/.local/share/skill-catalog
+git clone git@github.com:Starryboyjosh/skill-catalog-sorter.git ~/.local/share/skill-catalog
 ln -sfn ~/.local/share/skill-catalog/skill-catalog ~/.codex/skills/skill-catalog
 ln -sfn ~/.local/share/skill-catalog/skill-catalog ~/.claude/skills/skill-catalog
 ```
